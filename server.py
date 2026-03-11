@@ -5,7 +5,11 @@ import os
 app = Flask(__name__)
 
 PERPLEXITY_KEY = os.getenv("PERPLEXITY_KEY")
-print("PERPLEXITY KEY LOADED:", PERPLEXITY_KEY[:8])
+
+if PERPLEXITY_KEY:
+    print("PERPLEXITY KEY LOADED:", PERPLEXITY_KEY[:8])
+else:
+    print("PERPLEXITY KEY NOT FOUND")
 
 @app.route("/")
 def home():
@@ -33,7 +37,14 @@ def search():
     response = requests.post(url, headers=headers, json=data)
 
     result = response.json()
-    answer = result["choices"][0]["message"]["content"]
+
+    try:
+        answer = result["choices"][0]["message"]["content"]
+    except Exception:
+        return jsonify({
+            "error": "Unexpected response from Perplexity",
+            "raw": result
+        }), 500
 
     return jsonify({
         "result": answer
