@@ -11,41 +11,71 @@ if PERPLEXITY_KEY:
 else:
     print("PERPLEXITY KEY NOT FOUND")
 
+
 @app.route("/")
 def home():
-    return "Winter assistant is running"
+    return "Winter assistant is running", 200
+
 
 @app.route("/search", methods=["POST"])
 def search():
-
-    query = request.json["query"]
-
-    url = "https://api.perplexity.ai/chat/completions"
-
-    headers = {
-        "Authorization": f"Bearer {PERPLEXITY_KEY}",
-        "Content-Type": "application/json"
-    }
-
-    data = {
-        "model": "sonar-pro",
-        "messages": [
-            {"role": "user", "content": query}
-        ]
-    }
-
-    response = requests.post(url, headers=headers, json=data)
-
-    result = response.json()
-
     try:
-        answer = result["choices"][0]["message"]["content"]
-    except Exception:
-        return jsonify({
-            "error": "Unexpected response from Perplexity",
-            "raw": result
-        }), 500
+        body = request.get_json(force=True)
+        query = body.get("query", "").strip()
 
-    return jsonify({
-        "result": answer
-    })
+        if not query:
+            return jsonify({
+                "result": "No query provided."
+            }), 400
+
+        if not PERPLEXITY_KEY:
+            return jsonify({
+                "result": "Perplexity API key is missing on the server."
+            }), 500
+
+        url = "https://api.perplexity.ai/chat/completions"
+
+        headers = {
+            "Authorization": f"Bearer {PERPLEXITY_KEY}",
+            "Content-Type": "application/json"
+        }
+
+        data = {
+            "model": "sonar-pro",
+            "messages": [
+                {"role": "user", "content": query}
+            ]
+        }
+
+        response = requests.post(url, headers=headers, json=data, timeout=60)
+
+        print("PERPLEXITY STATUS:", response.status_code)
+        print("PERPLEXITY RAW:", response.text[:1000])
+
+        if response.status_code != 200:
+            return jsonify({
+                "result": f"Perplexity error {response.status_code}: {response.text[:500]}"
+            }), 200
+
+        result = response.json()
+
+        answer = (
+            result.get("choices", [{}])[0]
+            .get("message", {})
+            .get("content", "")
+        )
+
+        if not answer:
+            return jsonify({
+                "result": "Perplexity returned no answer."
+            }), 200
+
+        return jsonify({
+            "result": answer
+        }), 200
+
+    except Exception as e:
+        print("SERVER ERROR:", str(e))
+        return jsonify({
+            "result": f"Server error: {str(e)}"
+        }), 200
