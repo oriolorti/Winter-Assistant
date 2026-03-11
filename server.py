@@ -32,10 +32,9 @@ def search():
 
     response = requests.post(url, headers=headers, json=data)
 
-  result = response.json()
+    result = response.json()
+    answer = result["choices"][0]["message"]["content"]
 
-answer = result["choices"][0]["message"]["content"]
-
-return jsonify({
-    "result": answer
-})
+    return jsonify({
+        "result": answer
+    })
