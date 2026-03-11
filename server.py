@@ -24,7 +24,7 @@ def search():
     }
 
     data = {
-        "model": "sonar-medium-online",
+        "model": "sonar-pro",
         "messages": [
             {"role": "user", "content": query}
         ]
