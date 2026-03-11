@@ -4,6 +4,7 @@ import os
 
 app = Flask(__name__)
 
+# Load Perplexity API key
 PERPLEXITY_KEY = os.getenv("PERPLEXITY_KEY")
 
 if PERPLEXITY_KEY:
@@ -17,6 +18,15 @@ def home():
     return "Winter assistant is running", 200
 
 
+# Simple test endpoint to verify GPT Action connectivity
+@app.route("/test", methods=["POST"])
+def test():
+    return jsonify({
+        "result": "Winter test action works correctly."
+    }), 200
+
+
+# Main search endpoint using Perplexity
 @app.route("/search", methods=["POST"])
 def search():
     try:
@@ -47,7 +57,12 @@ def search():
             ]
         }
 
-        response = requests.post(url, headers=headers, json=data, timeout=60)
+        response = requests.post(
+            url,
+            headers=headers,
+            json=data,
+            timeout=60
+        )
 
         print("PERPLEXITY STATUS:", response.status_code)
         print("PERPLEXITY RAW:", response.text[:1000])
