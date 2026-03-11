@@ -5,6 +5,7 @@ import os
 app = Flask(__name__)
 
 PERPLEXITY_KEY = os.getenv("PERPLEXITY_KEY")
+print("PERPLEXITY KEY LOADED:", PERPLEXITY_KEY[:8])
 
 @app.route("/")
 def home():
