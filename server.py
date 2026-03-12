@@ -26,3 +26,10 @@ def chat(req: ChatRequest):
     return {
         "reply": response.output_text
     }
+@app.get("/test")
+def test():
+    response = client.responses.create(
+        model="gpt-5-mini",
+        input="Say hello from Winter"
+    )
+    return {"reply": response.output_text}
