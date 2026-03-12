@@ -16,20 +16,24 @@ class ChatRequest(BaseModel):
 def root():
     return {"status": "Winter is running"}
 
-@app.post("/chat")
-def chat(req: ChatRequest):
-    response = client.responses.create(
-        model="gpt-5-mini",
-        input=req.message
-    )
-
-    return {
-        "reply": response.output_text
-    }
 @app.get("/test")
 def test():
-    response = client.responses.create(
-        model="gpt-5-mini",
-        input="Say hello from Winter"
-    )
-    return {"reply": response.output_text}
+    try:
+        response = client.responses.create(
+            model="gpt-5.2",
+            input="Say hello from Winter in one short sentence."
+        )
+        return {"reply": response.output_text}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/chat")
+def chat(req: ChatRequest):
+    try:
+        response = client.responses.create(
+            model="gpt-5.2",
+            input=req.message
+        )
+        return {"reply": response.output_text}
+    except Exception as e:
+        return {"error": str(e)}
